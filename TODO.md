@@ -1,0 +1,6 @@
+-Embedding fixes for large amount of terms
+    -bigger ai?
+-ui
+-rule check
+-display key term after
+-deployments

@@ -5,13 +5,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cream: '#faf6ec',
-        ink: '#1a1a1a',
-        accent: '#d1344c',
+        cream: '#f5efe2',
+        ink: '#1f1d1a',
+        accent: '#8f2f23',
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['var(--font-serif)', 'ui-serif', 'Georgia', 'serif'],
+        serif: ['var(--font-serif)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

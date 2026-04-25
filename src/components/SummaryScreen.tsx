@@ -52,21 +52,29 @@ export function SummaryScreen({ history, score, onPlayAgain }: Props) {
         ) : (
           <ol className="divide-y divide-ink/5">
             {history.map((r, i) => (
-              <li key={i} className="flex items-baseline justify-between py-2 text-sm">
-                <span className="font-serif font-semibold">
-                  {i + 1}. {r.term.term}
-                </span>
-                <span
-                  className={
-                    r.outcome === 'win'
-                      ? 'text-green-700'
-                      : r.outcome === 'violation'
-                        ? 'text-accent'
-                        : 'text-ink/60'
-                  }
-                >
-                  {OUTCOME_LABEL[r.outcome]}
-                </span>
+              <li key={i} className="py-3 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="font-serif font-semibold">
+                    {i + 1}. {r.term.term}
+                  </span>
+                  <span
+                    className={
+                      r.outcome === 'win'
+                        ? 'text-green-700'
+                        : r.outcome === 'violation'
+                          ? 'text-accent'
+                          : 'text-ink/60'
+                    }
+                  >
+                    {OUTCOME_LABEL[r.outcome]}
+                  </span>
+                </div>
+                <p className="mt-1 text-ink/75">
+                  {r.term.description ?? 'No description available for this term yet.'}
+                </p>
+                <p className="mt-1 text-xs text-ink/55">
+                  Your clue: {r.description.trim() ? r.description : 'No clue entered.'}
+                </p>
               </li>
             ))}
           </ol>
