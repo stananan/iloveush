@@ -30,17 +30,17 @@ function significantTokens(s: string): string[] {
 }
 
 export function ruleCheck(description: string, term: Term): boolean {
+  return ruleCheckDetail(description, term) !== null;
+}
+
+// Returns the forbidden phrase (term or alias) the description matches,
+// or null if no rule was broken.
+export function ruleCheckDetail(description: string, term: Term): string | null {
   const descTokens = new Set(significantTokens(description));
-  if (descTokens.size === 0) return false;
+  if (descTokens.size === 0) return null;
 
-  const forbiddenStrings = [term.term, ...(term.aliases ?? [])];
-
-  for (const forbidden of forbiddenStrings) {
-    const tokens = significantTokens(forbidden);
-    if (tokens.length === 0) continue;
-    // all significant tokens must appear in the description
-    const allPresent = tokens.every((t) => descTokens.has(t));
-    if (allPresent) return true;
-  }
-  return false;
+  const tokens = significantTokens(term.term);
+  if (tokens.length === 0) return null;
+  if (tokens.every((t) => descTokens.has(t))) return term.term;
+  return null;
 }

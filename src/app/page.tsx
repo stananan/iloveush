@@ -1,49 +1,74 @@
 'use client';
 
 import { useCallback, useEffect, useMemo } from 'react';
-import { TERMS, getRandomTerm } from '@/data/terms';
+import { TERMS, getRandomTerm, getTermsByUnits } from '@/data/terms';
 import { useAI } from '@/lib/useAI';
 import { useGameState } from '@/lib/useGameState';
 import { ruleCheck } from '@/lib/ruleCheck';
+import type { RoundOutcome } from '@/lib/useGameState';
 import { StartScreen } from '@/components/StartScreen';
 import { GameScreen } from '@/components/GameScreen';
-import { RoundEndScreen } from '@/components/RoundEndScreen';
 import { SummaryScreen } from '@/components/SummaryScreen';
 
 export default function Home() {
   const [state, dispatch] = useGameState();
-  const { status, latestGuesses, requestGuesses, setLatestGuesses } = useAI();
+  const { status, latestGuesses, requestGuesses, setLatestGuesses, setAllowedIds } = useAI();
 
   const termById = useMemo(() => new Map(TERMS.map((t) => [t.id, t])), []);
 
-  // pipe AI guesses into game state while playing, filtering out any term whose
-  // name/alias is already mentioned in the description (the player is describing
-  // around those — they can't be the answer).
+  const phase = state.phase;
+  const description = phase === 'playing' ? state.description : '';
+  const activeTermId = phase === 'playing' ? state.term.id : null;
+  const currentGuesses = phase === 'playing' ? state.guesses : null;
   useEffect(() => {
-    if (state.phase !== 'playing') return;
-    const description = state.description;
-    const filtered = latestGuesses.filter((g) => {
-      const term = termById.get(g.id);
-      if (!term) return false;
-      if (term.id === state.term.id) return true; // never filter out the real term
-      return !ruleCheck(description, term);
-    });
-    dispatch({ type: 'setGuesses', guesses: filtered.slice(0, 3) });
-  }, [latestGuesses, state, dispatch, termById]);
+    if (phase !== 'playing' || activeTermId === null) return;
+    const filtered = latestGuesses
+      .filter((g) => {
+        const term = termById.get(g.id);
+        if (!term) return false;
+        if (term.id === activeTermId) return true;
+        return !ruleCheck(description, term);
+      })
+      .slice(0, 3);
+    const same =
+      currentGuesses &&
+      currentGuesses.length === filtered.length &&
+      currentGuesses.every((g, i) => g.id === filtered[i].id && g.score === filtered[i].score);
+    if (same) return;
+    dispatch({ type: 'setGuesses', guesses: filtered });
+  }, [latestGuesses, phase, activeTermId, description, currentGuesses, dispatch, termById]);
 
   const handleStart = useCallback(() => {
     if (status.phase !== 'ready') return;
-    const term = getRandomTerm(state.phase !== 'summary' ? state.selectedUnits : []);
+    if (state.phase === 'playing') return;
+    if (state.selectedUnits.length === 0) return;
+    const term = getRandomTerm(state.selectedUnits);
     setLatestGuesses([]);
-    dispatch({ type: 'startRound', term });
-  }, [status.phase, state, dispatch, setLatestGuesses]);
+    setAllowedIds(getTermsByUnits(state.selectedUnits).map((t) => t.id));
+    dispatch({ type: 'startSession', term });
+  }, [status.phase, state, dispatch, setLatestGuesses, setAllowedIds]);
 
-  const handleEndRound = useCallback(
-    (outcome: 'win' | 'violation' | 'timeout', finalGuesses: typeof latestGuesses) => {
-      dispatch({ type: 'endRound', outcome, finalGuesses });
+  const selectedUnits = state.phase === 'playing' ? state.selectedUnits : [];
+  const usedIdsRef = useMemoUsedIds(state);
+
+  const handleResolveTerm = useCallback(
+    (outcome: RoundOutcome, finalGuesses: typeof latestGuesses, violationReason?: string) => {
+      const nextTerm = pickNextTerm(selectedUnits, usedIdsRef.current);
+      setLatestGuesses([]);
+      dispatch({ type: 'resolveTerm', outcome, finalGuesses, nextTerm, violationReason });
     },
-    [dispatch, latestGuesses]
+    [selectedUnits, usedIdsRef, dispatch, setLatestGuesses]
   );
+
+  const handleEndSession = useCallback(() => {
+    setAllowedIds(null);
+    dispatch({ type: 'endSession' });
+  }, [dispatch, setAllowedIds]);
+
+  const handleAbort = useCallback(() => {
+    setAllowedIds(null);
+    dispatch({ type: 'abort' });
+  }, [dispatch, setAllowedIds]);
 
   if (state.phase === 'playing') {
     return (
@@ -51,33 +76,15 @@ export default function Home() {
         term={state.term}
         startedAt={state.startedAt}
         score={state.score}
+        solvedCount={state.history.filter((r) => r.outcome === 'win').length}
+        violationCount={state.history.filter((r) => r.outcome === 'violation').length}
         description={state.description}
         guesses={state.guesses}
         onDescriptionChange={(v) => dispatch({ type: 'setDescription', description: v })}
         onRequestGuesses={requestGuesses}
-        onEndRound={handleEndRound}
-      />
-    );
-  }
-
-  if (state.phase === 'round-end') {
-    return (
-      <RoundEndScreen
-        term={state.term}
-        outcome={state.outcome}
-        description={state.description}
-        finalGuesses={state.finalGuesses}
-        score={state.score}
-        onNext={() => {
-          dispatch({ type: 'nextRound' });
-          // start next round immediately
-          setTimeout(() => {
-            const term = getRandomTerm(state.selectedUnits);
-            setLatestGuesses([]);
-            dispatch({ type: 'startRound', term });
-          }, 0);
-        }}
-        onEndGame={() => dispatch({ type: 'endGame' })}
+        onResolveTerm={handleResolveTerm}
+        onEndSession={handleEndSession}
+        onGoHome={handleAbort}
       />
     );
   }
@@ -98,8 +105,28 @@ export default function Home() {
       onUnitsChange={(u) => dispatch({ type: 'setUnits', units: u })}
       onStart={handleStart}
       aiStatus={status}
-      score={state.score}
-      roundsPlayed={state.history.length}
+      score={0}
+      roundsPlayed={0}
     />
   );
+}
+
+function pickNextTerm(units: number[], usedIds: Set<string>) {
+  // avoid immediate repeats within the same session
+  for (let i = 0; i < 20; i++) {
+    const t = getRandomTerm(units);
+    if (!usedIds.has(t.id)) return t;
+  }
+  return getRandomTerm(units);
+}
+
+function useMemoUsedIds(state: ReturnType<typeof useGameState>[0]) {
+  return useMemo(() => {
+    const set = new Set<string>();
+    if (state.phase === 'playing') {
+      set.add(state.term.id);
+      for (const r of state.history) set.add(r.term.id);
+    }
+    return { current: set };
+  }, [state]);
 }

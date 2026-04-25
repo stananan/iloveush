@@ -7,7 +7,7 @@ import type { Guess } from './useAI';
 export const ROUND_SECONDS = 120;
 export const WIN_THRESHOLD = 0.6;
 
-export type RoundOutcome = 'win' | 'violation' | 'timeout';
+export type RoundOutcome = 'win' | 'violation' | 'skip';
 
 export type RoundResult = {
   term: Term;
@@ -15,10 +15,11 @@ export type RoundResult = {
   description: string;
   finalGuesses: Guess[];
   scoreDelta: number;
+  violationReason?: string;
 };
 
 export type GameState =
-  | { phase: 'idle'; selectedUnits: number[]; history: RoundResult[]; score: number }
+  | { phase: 'idle'; selectedUnits: number[] }
   | {
       phase: 'playing';
       term: Term;
@@ -29,44 +30,38 @@ export type GameState =
       history: RoundResult[];
       score: number;
     }
-  | {
-      phase: 'round-end';
-      term: Term;
-      outcome: RoundOutcome;
-      finalGuesses: Guess[];
-      description: string;
-      selectedUnits: number[];
-      history: RoundResult[];
-      score: number;
-    }
   | { phase: 'summary'; history: RoundResult[]; score: number; selectedUnits: number[] };
 
 export type Action =
   | { type: 'setUnits'; units: number[] }
-  | { type: 'startRound'; term: Term }
+  | { type: 'startSession'; term: Term }
   | { type: 'setDescription'; description: string }
   | { type: 'setGuesses'; guesses: Guess[] }
-  | { type: 'endRound'; outcome: RoundOutcome; finalGuesses: Guess[] }
-  | { type: 'nextRound' }
-  | { type: 'endGame' }
+  | {
+      type: 'resolveTerm';
+      outcome: RoundOutcome;
+      finalGuesses: Guess[];
+      nextTerm: Term;
+      violationReason?: string;
+    }
+  | { type: 'endSession' }
+  | { type: 'abort' }
   | { type: 'reset' };
 
 export const initialState: GameState = {
   phase: 'idle',
   selectedUnits: [],
-  history: [],
-  score: 0,
 };
 
 function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'setUnits':
-      if (state.phase === 'idle' || state.phase === 'round-end' || state.phase === 'summary') {
+      if (state.phase === 'idle' || state.phase === 'summary') {
         return { ...state, selectedUnits: action.units };
       }
       return state;
 
-    case 'startRound':
+    case 'startSession':
       return {
         phase: 'playing',
         term: action.term,
@@ -74,8 +69,8 @@ function reducer(state: GameState, action: Action): GameState {
         description: '',
         guesses: [],
         selectedUnits: state.selectedUnits,
-        history: state.history,
-        score: state.score,
+        history: [],
+        score: 0,
       };
 
     case 'setDescription':
@@ -86,7 +81,7 @@ function reducer(state: GameState, action: Action): GameState {
       if (state.phase !== 'playing') return state;
       return { ...state, guesses: action.guesses };
 
-    case 'endRound': {
+    case 'resolveTerm': {
       if (state.phase !== 'playing') return state;
       const delta = action.outcome === 'win' ? 1 : 0;
       const result: RoundResult = {
@@ -95,38 +90,34 @@ function reducer(state: GameState, action: Action): GameState {
         description: state.description,
         finalGuesses: action.finalGuesses,
         scoreDelta: delta,
+        violationReason: action.violationReason,
       };
       return {
-        phase: 'round-end',
-        term: state.term,
-        outcome: action.outcome,
-        finalGuesses: action.finalGuesses,
-        description: state.description,
-        selectedUnits: state.selectedUnits,
+        ...state,
+        term: action.nextTerm,
+        description: '',
+        guesses: [],
         history: [...state.history, result],
         score: state.score + delta,
       };
     }
 
-    case 'nextRound':
-      if (state.phase !== 'round-end') return state;
-      return {
-        phase: 'idle',
-        selectedUnits: state.selectedUnits,
-        history: state.history,
-        score: state.score,
-      };
-
-    case 'endGame':
+    case 'endSession': {
+      if (state.phase !== 'playing') return state;
       return {
         phase: 'summary',
-        history: state.phase === 'idle' || state.phase === 'playing' || state.phase === 'round-end' || state.phase === 'summary' ? state.history : [],
-        score: state.phase === 'idle' || state.phase === 'playing' || state.phase === 'round-end' || state.phase === 'summary' ? state.score : 0,
+        history: state.history,
+        score: state.score,
         selectedUnits: state.selectedUnits,
       };
+    }
+
+    case 'abort':
+      if (state.phase !== 'playing') return state;
+      return { phase: 'idle', selectedUnits: state.selectedUnits };
 
     case 'reset':
-      return { ...initialState, selectedUnits: state.selectedUnits };
+      return { phase: 'idle', selectedUnits: state.selectedUnits };
   }
 }
 

@@ -46,13 +46,15 @@ export function useAI() {
           worker.postMessage({
             type: 'embedTerms',
             terms: TERMS.map((t) => {
-              // Richer embedding text: term + topic + aliases. This spreads terms
-              // like "Social Security Act" and "FDR" further apart in vector space
-              // because their supporting context differs.
+              // Rich embedding text: term + aliases + topic + factual description.
+              // The description carries the key facts a student would mention
+              // (people, places, dates, causes) so a paraphrased clue can match.
               const parts = [t.term];
-              if (t.topic) parts.push(t.topic);
               if (t.aliases && t.aliases.length) parts.push(t.aliases.join(', '));
-              return { id: t.id, text: parts.join(' — ') };
+              if (t.keywords && t.keywords.length) parts.push(t.keywords.join(', '));
+              if (t.topic) parts.push(t.topic);
+              if (t.description) parts.push(t.description);
+              return { id: t.id, text: parts.join('. ') };
             }),
           });
         }
@@ -87,5 +89,11 @@ export function useAI() {
     worker.postMessage({ type: 'embed', text, requestId });
   }, []);
 
-  return { status, latestGuesses, requestGuesses, setLatestGuesses };
+  const setAllowedIds = useCallback((ids: string[] | null) => {
+    const worker = workerRef.current;
+    if (!worker) return;
+    worker.postMessage({ type: 'setAllowedIds', ids });
+  }, []);
+
+  return { status, latestGuesses, requestGuesses, setLatestGuesses, setAllowedIds };
 }

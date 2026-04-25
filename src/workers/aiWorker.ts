@@ -10,6 +10,7 @@ type InMsg =
   | { type: 'init' }
   | { type: 'embedTerms'; terms: TermInput[] }
   | { type: 'loadCachedEmbeddings'; ids: string[]; dim: number; data: Float32Array }
+  | { type: 'setAllowedIds'; ids: string[] | null }
   | { type: 'embed'; text: string; requestId: number };
 
 type OutMsg =
@@ -24,12 +25,13 @@ let extractor: FeatureExtractionPipeline | null = null;
 let termIds: string[] = [];
 let termDim = 0;
 let termMatrix: Float32Array | null = null; // length = termIds.length * termDim
+let allowedIdxSet: Set<number> | null = null; // if set, only these term indices are scored
 
 const post = (m: OutMsg) => (self as unknown as Worker).postMessage(m);
 
 async function ensureModel() {
   if (extractor) return;
-  extractor = (await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+  extractor = (await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
     progress_callback: (p: { status: string; progress?: number }) => {
       if (typeof p.progress === 'number') {
         post({ type: 'modelProgress', progress: p.progress / 100 });
@@ -98,6 +100,7 @@ async function handleEmbed(text: string, requestId: number) {
   const TOP_N = 8;
   const top: { id: string; score: number }[] = [];
   for (let i = 0; i < scores.length; i++) {
+    if (allowedIdxSet && !allowedIdxSet.has(i)) continue;
     const s = scores[i];
     if (top.length < TOP_N) {
       top.push({ id: termIds[i], score: s });
@@ -108,6 +111,19 @@ async function handleEmbed(text: string, requestId: number) {
     }
   }
   post({ type: 'guesses', requestId, results: top });
+}
+
+function setAllowedIds(ids: string[] | null) {
+  if (!ids) {
+    allowedIdxSet = null;
+    return;
+  }
+  const allowed = new Set(ids);
+  const idx = new Set<number>();
+  for (let i = 0; i < termIds.length; i++) {
+    if (allowed.has(termIds[i])) idx.add(i);
+  }
+  allowedIdxSet = idx;
 }
 
 self.addEventListener('message', async (e: MessageEvent<InMsg>) => {
@@ -122,6 +138,8 @@ self.addEventListener('message', async (e: MessageEvent<InMsg>) => {
       termIds = msg.ids;
       termDim = msg.dim;
       termMatrix = msg.data;
+    } else if (msg.type === 'setAllowedIds') {
+      setAllowedIds(msg.ids);
     } else if (msg.type === 'embed') {
       await handleEmbed(msg.text, msg.requestId);
     }

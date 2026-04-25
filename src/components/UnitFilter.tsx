@@ -9,30 +9,40 @@ type Props = {
 };
 
 export function UnitFilter({ selected, onChange }: Props) {
-  const isAll = selected.length === 0 || selected.length === UNITS.length;
+  const allSelected = selected.length === UNITS.length;
+  const noneSelected = selected.length === 0;
 
   const toggle = (n: number) => {
-    const effective = isAll ? UNITS.map((u) => u.number) : selected;
-    const next = effective.includes(n)
-      ? effective.filter((x) => x !== n)
-      : [...effective, n].sort();
-    onChange(next.length === UNITS.length ? [] : next);
+    const next = selected.includes(n)
+      ? selected.filter((x) => x !== n)
+      : [...selected, n].sort((a, b) => a - b);
+    onChange(next);
   };
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <span className="text-sm uppercase tracking-wide text-ink/60">Units</span>
-        <button
-          className="text-xs text-accent hover:underline"
-          onClick={() => onChange([])}
-        >
-          Select all
-        </button>
+        <div className="flex gap-3">
+          <button
+            className="text-xs text-accent hover:underline disabled:opacity-40 disabled:no-underline"
+            onClick={() => onChange(UNITS.map((u) => u.number))}
+            disabled={allSelected}
+          >
+            Select all
+          </button>
+          <button
+            className="text-xs text-accent hover:underline disabled:opacity-40 disabled:no-underline"
+            onClick={() => onChange([])}
+            disabled={noneSelected}
+          >
+            Deselect all
+          </button>
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
         {UNITS.map((u) => {
-          const active = isAll || selected.includes(u.number);
+          const active = selected.includes(u.number);
           return (
             <button
               key={u.number}

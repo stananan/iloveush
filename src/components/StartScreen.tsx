@@ -43,6 +43,7 @@ export function StartScreen({
 }: Props) {
   const [howToOpen, setHowToOpen] = useState(false);
   const ready = aiStatus.phase === 'ready';
+  const hasUnits = selectedUnits.length > 0;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-10 px-6 py-16">
@@ -50,9 +51,6 @@ export function StartScreen({
         <h1 className="font-serif text-6xl md:text-7xl font-bold tracking-tight">
           I <span className="text-accent">❤️</span> USH
         </h1>
-        <p className="mt-3 text-lg text-ink/70">
-          Describe the term. Don&apos;t say it. Beat the class.
-        </p>
       </div>
 
       <div className="w-full rounded-2xl border border-ink/10 bg-white p-6 shadow-sm">
@@ -62,7 +60,7 @@ export function StartScreen({
       <div className="flex flex-col items-center gap-3">
         <button
           onClick={onStart}
-          disabled={!ready}
+          disabled={!ready || !hasUnits}
           className="rounded-full bg-accent px-10 py-4 text-xl font-semibold text-white shadow-lg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Start Round
@@ -70,6 +68,9 @@ export function StartScreen({
         <div className="text-sm text-ink/60">
           <StatusLine status={aiStatus} />
         </div>
+        {ready && !hasUnits && (
+          <div className="text-sm text-accent">Select at least one unit to start.</div>
+        )}
         {roundsPlayed > 0 && (
           <div className="text-sm text-ink/60">
             Session: {score} point{score === 1 ? '' : 's'} · {roundsPlayed} round

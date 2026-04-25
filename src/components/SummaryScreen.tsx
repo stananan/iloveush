@@ -25,7 +25,7 @@ function longestStreak(history: RoundResult[]): number {
 const OUTCOME_LABEL: Record<RoundResult['outcome'], string> = {
   win: 'Win',
   violation: 'Rule Violation',
-  timeout: 'Timeout',
+  skip: 'Skipped',
 };
 
 export function SummaryScreen({ history, score, onPlayAgain }: Props) {
@@ -38,15 +38,15 @@ export function SummaryScreen({ history, score, onPlayAgain }: Props) {
 
       <div className="grid grid-cols-3 gap-3">
         <Stat label="Score" value={score} />
-        <Stat label="Rounds" value={history.length} />
+        <Stat label="Terms" value={history.length} />
         <Stat label="Wins" value={wins} />
         <Stat label="Longest streak" value={streak} />
         <Stat label="Rule violations" value={history.filter((r) => r.outcome === 'violation').length} />
-        <Stat label="Timeouts" value={history.filter((r) => r.outcome === 'timeout').length} />
+        <Stat label="Skipped" value={history.filter((r) => r.outcome === 'skip').length} />
       </div>
 
       <div className="rounded-2xl border border-ink/10 bg-white p-6 shadow-sm">
-        <div className="text-xs uppercase tracking-widest text-ink/50 mb-3">Rounds</div>
+        <div className="text-xs uppercase tracking-widest text-ink/50 mb-3">Terms</div>
         {history.length === 0 ? (
           <div className="text-sm italic text-ink/40">No rounds played.</div>
         ) : (
