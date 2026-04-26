@@ -71,6 +71,9 @@ export default function Home() {
   }, [dispatch, setAllowedIds]);
 
   if (state.phase === 'playing') {
+    const targetConfidence = activeTermId
+      ? (latestGuesses.find((g) => g.id === activeTermId)?.score ?? null)
+      : null;
     return (
       <GameScreen
         term={state.term}
@@ -80,6 +83,7 @@ export default function Home() {
         violationCount={state.history.filter((r) => r.outcome === 'violation').length}
         description={state.description}
         guesses={state.guesses}
+        targetConfidence={targetConfidence}
         onDescriptionChange={(v) => dispatch({ type: 'setDescription', description: v })}
         onRequestGuesses={requestGuesses}
         onResolveTerm={handleResolveTerm}
