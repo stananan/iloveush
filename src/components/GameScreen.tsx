@@ -59,9 +59,6 @@ export function GameScreen({
     termResolvedRef.current = false;
     setWinPending(false);
     setViolation(null);
-    // Defer focus so React re-renders with disabled=false before we focus
-    const h = setTimeout(() => textareaRef.current?.focus(), 0);
-    return () => clearTimeout(h);
   }, [term.id]);
 
   // session countdown
@@ -109,6 +106,13 @@ export function GameScreen({
   const [winPending, setWinPending] = useState(false);
   const winPendingRef = useRef(false);
   winPendingRef.current = winPending;
+
+  // focus textarea once it becomes interactive (after win/violation clears)
+  useEffect(() => {
+    if (!winPending && violation === null) {
+      textareaRef.current?.focus();
+    }
+  }, [winPending, violation]);
 
   useEffect(() => {
     if (sessionEndedRef.current || termResolvedRef.current || winPending) return;
