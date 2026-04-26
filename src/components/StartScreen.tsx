@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { UnitFilter } from './UnitFilter';
-import { LeaderboardModal } from './LeaderboardModal';
-import type { AIStatus } from '@/lib/useAI';
+import { useState } from "react";
+import { UnitFilter } from "./UnitFilter";
+import { LeaderboardModal } from "./LeaderboardModal";
+import type { AIStatus } from "@/lib/useAI";
 
 type Props = {
   selectedUnits: number[];
@@ -15,20 +15,20 @@ type Props = {
 };
 
 function StatusLine({ status }: { status: AIStatus }) {
-  if (status.phase === 'ready') {
+  if (status.phase === "ready") {
     return <span className="text-green-700">AI ready</span>;
   }
-  if (status.phase === 'loading-model') {
+  if (status.phase === "loading-model") {
     return <span>Loading AI model… {Math.round(status.progress * 100)}%</span>;
   }
-  if (status.phase === 'embedding-terms') {
+  if (status.phase === "embedding-terms") {
     return (
       <span>
         Preparing term bank… {status.done}/{status.total}
       </span>
     );
   }
-  if (status.phase === 'error') {
+  if (status.phase === "error") {
     return <span className="text-accent">Error: {status.message}</span>;
   }
   return <span>Starting up…</span>;
@@ -44,7 +44,7 @@ export function StartScreen({
 }: Props) {
   const [howToOpen, setHowToOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
-  const ready = aiStatus.phase === 'ready';
+  const ready = aiStatus.phase === "ready";
   const hasUnits = selectedUnits.length > 0;
 
   return (
@@ -71,12 +71,15 @@ export function StartScreen({
           <StatusLine status={aiStatus} />
         </div>
         {ready && !hasUnits && (
-          <div className="text-sm text-accent">Select at least one unit to start.</div>
+          <div className="text-sm text-accent">
+            Select at least one unit to start.
+          </div>
         )}
         {roundsPlayed > 0 && (
           <div className="text-sm text-ink/60">
-            Session: {score} point{score === 1 ? '' : 's'} · {roundsPlayed} round
-            {roundsPlayed === 1 ? '' : 's'}
+            Session: {score} point{score === 1 ? "" : "s"} · {roundsPlayed}{" "}
+            round
+            {roundsPlayed === 1 ? "" : "s"}
           </div>
         )}
         <div className="flex gap-4">
@@ -95,9 +98,11 @@ export function StartScreen({
         </div>
       </div>
 
-      <p className="text-center text-xs text-ink/30">Created by Stanley Ho</p>
+      <p className="text-center text-xs text-ink/30">Created by Stanley Ho.</p>
 
-      {leaderboardOpen && <LeaderboardModal onClose={() => setLeaderboardOpen(false)} />}
+      {leaderboardOpen && (
+        <LeaderboardModal onClose={() => setLeaderboardOpen(false)} />
+      )}
 
       {howToOpen && (
         <div
