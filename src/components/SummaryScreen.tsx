@@ -6,6 +6,7 @@ type Props = {
   history: RoundResult[];
   score: number;
   onPlayAgain: () => void;
+  onGoHome: () => void;
 };
 
 function longestStreak(history: RoundResult[]): number {
@@ -28,7 +29,14 @@ const OUTCOME_LABEL: Record<RoundResult['outcome'], string> = {
   skip: 'Skipped',
 };
 
-export function SummaryScreen({ history, score, onPlayAgain }: Props) {
+
+const OUTCOME_BADGE: Record<RoundResult['outcome'], string> = {
+  win: '✓',
+  violation: '✗',
+  skip: '→',
+};
+
+export function SummaryScreen({ history, score, onPlayAgain, onGoHome }: Props) {
   const wins = history.filter((r) => r.outcome === 'win').length;
   const streak = longestStreak(history);
 
@@ -58,14 +66,15 @@ export function SummaryScreen({ history, score, onPlayAgain }: Props) {
                     {i + 1}. {r.term.term}
                   </span>
                   <span
-                    className={
+                    className={`flex items-center gap-1 font-medium ${
                       r.outcome === 'win'
                         ? 'text-green-700'
                         : r.outcome === 'violation'
                           ? 'text-accent'
                           : 'text-ink/60'
-                    }
+                    }`}
                   >
+                    <span>{OUTCOME_BADGE[r.outcome]}</span>
                     {OUTCOME_LABEL[r.outcome]}
                   </span>
                 </div>
@@ -81,7 +90,13 @@ export function SummaryScreen({ history, score, onPlayAgain }: Props) {
         )}
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={onGoHome}
+          className="rounded-full border border-ink/20 px-8 py-3 font-semibold hover:bg-ink/5"
+        >
+          Home
+        </button>
         <button
           onClick={onPlayAgain}
           className="rounded-full bg-accent px-10 py-3 font-semibold text-white shadow hover:brightness-110"

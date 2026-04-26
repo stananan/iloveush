@@ -85,6 +85,8 @@ export function StartScreen({
         </button>
       </div>
 
+      <p className="text-center text-xs text-ink/30">Created by Stanley Ho</p>
+
       {howToOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"

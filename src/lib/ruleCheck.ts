@@ -12,35 +12,31 @@ function normalize(s: string): string {
     .trim();
 }
 
-function stem(token: string): string {
-  // crude suffix stripping — good enough for USH vocab
-  for (const suf of ['tion', 'sion', 'ing', 'ed', 's']) {
-    if (token.length > suf.length + 2 && token.endsWith(suf)) {
-      return token.slice(0, -suf.length);
-    }
-  }
-  return token;
-}
-
-function significantTokens(s: string): string[] {
+function normalizedTokens(s: string): string[] {
   return normalize(s)
     .split(' ')
-    .filter((t) => t && !STOPWORDS.has(t))
-    .map(stem);
+    .filter((t) => t && !STOPWORDS.has(t));
 }
 
 export function ruleCheck(description: string, term: Term): boolean {
   return ruleCheckDetail(description, term) !== null;
 }
 
-// Returns the forbidden phrase (term or alias) the description matches,
-// or null if no rule was broken.
+// Returns the term if the description contains any word from the term (exact or
+// substring match with min length 4), or null if no rule was broken.
 export function ruleCheckDetail(description: string, term: Term): string | null {
-  const descTokens = new Set(significantTokens(description));
-  if (descTokens.size === 0) return null;
+  const descTokens = normalizedTokens(description);
+  if (descTokens.length === 0) return null;
 
-  const tokens = significantTokens(term.term);
-  if (tokens.length === 0) return null;
-  if (tokens.every((t) => descTokens.has(t))) return term.term;
+  const termTokens = normalizedTokens(term.term);
+  if (termTokens.length === 0) return null;
+
+  for (const tt of termTokens) {
+    for (const dt of descTokens) {
+      if (tt === dt) return term.term;
+      const [shorter, longer] = tt.length <= dt.length ? [tt, dt] : [dt, tt];
+      if (shorter.length >= 4 && longer.includes(shorter)) return term.term;
+    }
+  }
   return null;
 }

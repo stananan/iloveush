@@ -95,6 +95,7 @@ export default function Home() {
         history={state.history}
         score={state.score}
         onPlayAgain={() => dispatch({ type: 'reset' })}
+        onGoHome={() => dispatch({ type: 'reset' })}
       />
     );
   }

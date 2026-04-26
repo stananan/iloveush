@@ -25,7 +25,6 @@ type Props = {
   onGoHome: () => void;
 };
 
-const DEBOUNCE_MS = 400;
 const WIN_CELEBRATION_MS = 900;
 const VIOLATION_DISPLAY_MS = 1800;
 
@@ -76,19 +75,17 @@ export function GameScreen({
 
   const [violation, setViolation] = useState<string | null>(null);
 
-  // debounced embed + rule check
+  // both rule check and AI request only fire after a complete word (space typed)
   useEffect(() => {
     if (sessionEndedRef.current || termResolvedRef.current) return;
+    if (!description.endsWith(' ') || !description.trim()) return;
     const matched = ruleCheckDetail(description, term);
     if (matched) {
       termResolvedRef.current = true;
       setViolation(matched);
       return;
     }
-    const h = setTimeout(() => {
-      if (description.trim()) onRequestGuesses(description);
-    }, DEBOUNCE_MS);
-    return () => clearTimeout(h);
+    onRequestGuesses(description);
   }, [description, term, onRequestGuesses]);
 
   // hold the violation notice briefly, then advance
