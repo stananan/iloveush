@@ -17,7 +17,6 @@ Items are grouped by category. No priority order within sections.
 
 ## Term Bank
 
-- **Expand to all 8 units** — Verify every unit has full coverage; add missing terms from the AP USH curriculum
 - **Difficulty rating per term** — Tag each term as easy / medium / hard; weight random selection to balance sessions
 - **Term images** — Attach an optional image URL to terms (portraits, maps, documents) shown in the summary
 - **Community term submissions** — Simple form (name + definition) that writes to a Google Sheet for review
@@ -26,7 +25,7 @@ Items are grouped by category. No priority order within sections.
 
 ## AI / Matching
 
-- **Confidence threshold feedback** — Show a progress bar filling toward the win threshold so players know how close they are
+
 - **Top-guess confidence color** — Color the top guess green/yellow/red based on cosine score proximity to win threshold
 - **Wrong-guess explanations** — In the summary, show why the AI ranked a wrong term highly (shared keywords)
 - **Model upgrade path** — Document how to swap to `bge-base-en-v1.5` if accuracy becomes a concern; current `bge-small` is fast but less precise
@@ -45,8 +44,7 @@ Items are grouped by category. No priority order within sections.
 ## UI / UX
 
 - **Mobile layout** — Fix textarea + guesses panel stacking on small screens; ensure soft keyboard doesn't cover guesses
-- **Keyboard shortcut** — `Tab` to skip, `Esc` to go home (with confirmation), `Enter` to submit if in practice mode
-- **Animated score counter** — Tick up the score number on win instead of instant update
+
 - **Dark mode** — Honor `prefers-color-scheme: dark`
 - **Accessibility** — Add ARIA labels to timer, guesses panel, and textarea; announce violations to screen readers
 - **Loading skeleton** — Replace plain text status with a styled skeleton while the AI model loads on first visit

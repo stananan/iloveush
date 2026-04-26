@@ -30,7 +30,7 @@ export type GameState =
       history: RoundResult[];
       score: number;
     }
-  | { phase: 'summary'; history: RoundResult[]; score: number; selectedUnits: number[] };
+  | { phase: 'summary'; history: RoundResult[]; score: number; selectedUnits: number[]; durationSeconds: number };
 
 export type Action =
   | { type: 'setUnits'; units: number[] }
@@ -109,6 +109,7 @@ function reducer(state: GameState, action: Action): GameState {
         history: state.history,
         score: state.score,
         selectedUnits: state.selectedUnits,
+        durationSeconds: Math.min(180, Math.floor((Date.now() - state.startedAt) / 1000)),
       };
     }
 

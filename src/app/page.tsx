@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo } from 'react';
+import { submitScore } from '@/lib/leaderboard';
 import { TERMS, getRandomTerm, getTermsByUnits } from '@/data/terms';
 import { useAI } from '@/lib/useAI';
 import { useGameState } from '@/lib/useGameState';
@@ -70,6 +71,16 @@ export default function Home() {
     dispatch({ type: 'abort' });
   }, [dispatch, setAllowedIds]);
 
+  const handleSubmitScore = useCallback(async (username: string) => {
+    if (state.phase !== 'summary') return;
+    await submitScore({
+      username,
+      score: state.score,
+      history: state.history,
+      durationSeconds: state.durationSeconds,
+    });
+  }, [state]);
+
   if (state.phase === 'playing') {
     const targetConfidence = activeTermId
       ? (latestGuesses.find((g) => g.id === activeTermId)?.score ?? null)
@@ -98,8 +109,10 @@ export default function Home() {
       <SummaryScreen
         history={state.history}
         score={state.score}
+        durationSeconds={state.durationSeconds}
         onPlayAgain={() => dispatch({ type: 'reset' })}
         onGoHome={() => dispatch({ type: 'reset' })}
+        onSubmitScore={handleSubmitScore}
       />
     );
   }

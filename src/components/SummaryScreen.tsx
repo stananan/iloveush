@@ -1,12 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import type { RoundResult } from '@/lib/useGameState';
 
 type Props = {
   history: RoundResult[];
   score: number;
+  durationSeconds: number;
   onPlayAgain: () => void;
   onGoHome: () => void;
+  onSubmitScore: (username: string) => Promise<void>;
 };
 
 function longestStreak(history: RoundResult[]): number {
@@ -23,12 +26,17 @@ function longestStreak(history: RoundResult[]): number {
   return best;
 }
 
+function formatDuration(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${String(sec).padStart(2, '0')}`;
+}
+
 const OUTCOME_LABEL: Record<RoundResult['outcome'], string> = {
   win: 'Win',
   violation: 'Rule Violation',
   skip: 'Skipped',
 };
-
 
 const OUTCOME_BADGE: Record<RoundResult['outcome'], string> = {
   win: '✓',
@@ -36,9 +44,28 @@ const OUTCOME_BADGE: Record<RoundResult['outcome'], string> = {
   skip: '→',
 };
 
-export function SummaryScreen({ history, score, onPlayAgain, onGoHome }: Props) {
+type SubmitState = 'idle' | 'submitting' | 'submitted' | 'error';
+
+export function SummaryScreen({ history, score, durationSeconds, onPlayAgain, onGoHome, onSubmitScore }: Props) {
   const wins = history.filter((r) => r.outcome === 'win').length;
   const streak = longestStreak(history);
+
+  const [username, setUsername] = useState('');
+  const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async () => {
+    const name = username.trim();
+    if (!name) return;
+    setSubmitState('submitting');
+    try {
+      await onSubmitScore(name);
+      setSubmitState('submitted');
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'Submission failed. Try again.');
+      setSubmitState('error');
+    }
+  };
 
   return (
     <div className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-16">
@@ -51,6 +78,38 @@ export function SummaryScreen({ history, score, onPlayAgain, onGoHome }: Props) 
         <Stat label="Longest streak" value={streak} />
         <Stat label="Rule violations" value={history.filter((r) => r.outcome === 'violation').length} />
         <Stat label="Skipped" value={history.filter((r) => r.outcome === 'skip').length} />
+      </div>
+
+      {/* leaderboard submission */}
+      <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
+        <div className="text-xs uppercase tracking-widest text-ink/50 mb-3">Submit to Leaderboard</div>
+        {submitState === 'submitted' ? (
+          <div className="text-green-700 font-semibold text-sm">
+            Score submitted! Time: {formatDuration(durationSeconds)}
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.slice(0, 20))}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
+              placeholder="Your username (max 20 chars)"
+              disabled={submitState === 'submitting'}
+              className="flex-1 rounded-full border border-ink/20 px-4 py-2 text-sm outline-none focus:border-accent/60 disabled:opacity-60"
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={submitState === 'submitting' || !username.trim()}
+              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
+            >
+              {submitState === 'submitting' ? 'Submitting…' : 'Submit'}
+            </button>
+          </div>
+        )}
+        {submitState === 'error' && (
+          <p className="mt-2 text-xs text-accent">{errorMsg}</p>
+        )}
       </div>
 
       <div className="rounded-2xl border border-ink/10 bg-white p-6 shadow-sm">
