@@ -59,7 +59,9 @@ export function GameScreen({
     termResolvedRef.current = false;
     setWinPending(false);
     setViolation(null);
-    textareaRef.current?.focus();
+    // Defer focus so React re-renders with disabled=false before we focus
+    const h = setTimeout(() => textareaRef.current?.focus(), 0);
+    return () => clearTimeout(h);
   }, [term.id]);
 
   // session countdown
