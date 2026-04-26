@@ -90,7 +90,7 @@ export default function Home() {
         term={state.term}
         startedAt={state.startedAt}
         score={state.score}
-        solvedCount={state.history.filter((r) => r.outcome === 'win').length}
+        termCount={state.history.length + 1}
         violationCount={state.history.filter((r) => r.outcome === 'violation').length}
         description={state.description}
         guesses={state.guesses}

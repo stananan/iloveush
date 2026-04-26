@@ -47,7 +47,6 @@ const OUTCOME_BADGE: Record<RoundResult['outcome'], string> = {
 type SubmitState = 'idle' | 'submitting' | 'submitted' | 'error';
 
 export function SummaryScreen({ history, score, durationSeconds, onPlayAgain, onGoHome, onSubmitScore }: Props) {
-  const wins = history.filter((r) => r.outcome === 'win').length;
   const streak = longestStreak(history);
 
   const [username, setUsername] = useState('');
@@ -71,13 +70,16 @@ export function SummaryScreen({ history, score, durationSeconds, onPlayAgain, on
     <div className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-16">
       <h1 className="font-serif text-5xl font-bold text-center">Game Summary</h1>
 
-      <div className="grid grid-cols-3 gap-3">
-        <Stat label="Score" value={score} />
-        <Stat label="Terms" value={history.length} />
-        <Stat label="Wins" value={wins} />
-        <Stat label="Longest streak" value={streak} />
-        <Stat label="Rule violations" value={history.filter((r) => r.outcome === 'violation').length} />
-        <Stat label="Skipped" value={history.filter((r) => r.outcome === 'skip').length} />
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-3 gap-3">
+          <Stat label="Score" value={score} />
+          <Stat label="Terms" value={history.length} />
+          <Stat label="Longest streak" value={streak} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Stat label="Rule violations" value={history.filter((r) => r.outcome === 'violation').length} />
+          <Stat label="Skipped" value={history.filter((r) => r.outcome === 'skip').length} />
+        </div>
       </div>
 
       {/* leaderboard submission */}

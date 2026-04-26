@@ -5,21 +5,28 @@ import { fetchLeaderboard, type LeaderboardEntry } from '@/lib/leaderboard';
 
 const PAGE_SIZE = 10;
 
-function formatDuration(s: number): string {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${String(sec).padStart(2, '0')}`;
+function formatTimestamp(d: Date): string {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-function formatDate(d: Date): string {
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+const OUTCOME_BADGE: Record<string, string> = {
+  win: '✓',
+  violation: '✗',
+  skip: '→',
+};
+
+const OUTCOME_LABEL: Record<string, string> = {
+  win: 'Win',
+  violation: 'Rule Violation',
+  skip: 'Skipped',
+};
 
 export function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLeaderboard(100)
@@ -30,6 +37,8 @@ export function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
   const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
   const pageEntries = entries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  const toggleExpand = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
   return (
     <div
@@ -71,23 +80,58 @@ export function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   <th className="pb-3 pr-3 font-medium">#</th>
                   <th className="pb-3 pr-3 font-medium">Username</th>
                   <th className="pb-3 pr-3 text-right font-medium">Score</th>
-                  <th className="pb-3 pr-3 text-right font-medium">Solved</th>
-                  <th className="pb-3 pr-3 text-right font-medium">Time</th>
-                  <th className="pb-3 text-right font-medium">Date</th>
+                  <th className="pb-3 text-right font-medium">Submitted</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink/5">
                 {pageEntries.map((e, i) => {
                   const rank = page * PAGE_SIZE + i + 1;
+                  const isExpanded = expandedId === e.id;
                   return (
-                    <tr key={e.id} className={rank <= 3 ? 'font-semibold' : ''}>
-                      <td className="py-2.5 pr-3 text-ink/40">{rank}</td>
-                      <td className="py-2.5 pr-3 truncate max-w-[140px]">{e.username}</td>
-                      <td className="py-2.5 pr-3 text-right font-mono tabular-nums">{e.score}</td>
-                      <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-ink/60">{e.solvedCount}</td>
-                      <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-ink/60">{formatDuration(e.durationSeconds)}</td>
-                      <td className="py-2.5 text-right text-ink/40">{formatDate(e.submittedAt)}</td>
-                    </tr>
+                    <>
+                      <tr
+                        key={e.id}
+                        onClick={() => toggleExpand(e.id)}
+                        className={`cursor-pointer hover:bg-ink/[0.03] transition-colors ${rank <= 3 ? 'font-semibold' : ''}`}
+                      >
+                        <td className="py-2.5 pr-3 text-ink/40">{rank}</td>
+                        <td className="py-2.5 pr-3 truncate max-w-[140px]">{e.username}</td>
+                        <td className="py-2.5 pr-3 text-right font-mono tabular-nums">{e.score}</td>
+                        <td className="py-2.5 text-right text-ink/40">{formatTimestamp(e.submittedAt)}</td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${e.id}-history`}>
+                          <td colSpan={4} className="pb-3 pt-1 px-1">
+                            <div className="rounded-xl border border-ink/10 bg-ink/[0.02] px-4 py-3">
+                              {e.history.length === 0 ? (
+                                <p className="text-xs italic text-ink/40">No history recorded.</p>
+                              ) : (
+                                <ol className="divide-y divide-ink/5">
+                                  {e.history.map((r, idx) => (
+                                    <li key={idx} className="flex items-baseline justify-between gap-3 py-2 text-xs">
+                                      <span className="font-serif font-semibold">
+                                        {idx + 1}. {r.term}
+                                      </span>
+                                      <span
+                                        className={`flex shrink-0 items-center gap-1 font-medium ${
+                                          r.outcome === 'win'
+                                            ? 'text-green-700'
+                                            : r.outcome === 'violation'
+                                              ? 'text-accent'
+                                              : 'text-ink/50'
+                                        }`}
+                                      >
+                                        {OUTCOME_BADGE[r.outcome] ?? '?'} {OUTCOME_LABEL[r.outcome] ?? r.outcome}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   );
                 })}
               </tbody>
