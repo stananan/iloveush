@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo } from 'react';
+import { submitScore } from '@/lib/leaderboard';
 import { TERMS, getRandomTerm, getTermsByUnits } from '@/data/terms';
 import { useAI } from '@/lib/useAI';
 import { useGameState } from '@/lib/useGameState';
@@ -70,6 +71,16 @@ export default function Home() {
     dispatch({ type: 'abort' });
   }, [dispatch, setAllowedIds]);
 
+  const handleSubmitScore = useCallback(async (username: string) => {
+    if (state.phase !== 'summary') return;
+    await submitScore({
+      username,
+      score: state.score,
+      history: state.history,
+      durationSeconds: state.durationSeconds,
+    });
+  }, [state]);
+
   if (state.phase === 'playing') {
     const targetConfidence = activeTermId
       ? (latestGuesses.find((g) => g.id === activeTermId)?.score ?? null)
@@ -79,7 +90,7 @@ export default function Home() {
         term={state.term}
         startedAt={state.startedAt}
         score={state.score}
-        solvedCount={state.history.filter((r) => r.outcome === 'win').length}
+        termCount={state.history.length + 1}
         violationCount={state.history.filter((r) => r.outcome === 'violation').length}
         description={state.description}
         guesses={state.guesses}
@@ -98,8 +109,11 @@ export default function Home() {
       <SummaryScreen
         history={state.history}
         score={state.score}
+        durationSeconds={state.durationSeconds}
+        selectedUnits={state.selectedUnits}
         onPlayAgain={() => dispatch({ type: 'reset' })}
         onGoHome={() => dispatch({ type: 'reset' })}
+        onSubmitScore={handleSubmitScore}
       />
     );
   }

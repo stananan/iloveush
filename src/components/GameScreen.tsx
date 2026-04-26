@@ -14,7 +14,7 @@ type Props = {
   term: Term;
   startedAt: number;
   score: number;
-  solvedCount: number;
+  termCount: number;
   description: string;
   guesses: Guess[];
   targetConfidence: number | null;
@@ -34,7 +34,7 @@ export function GameScreen({
   term,
   startedAt,
   score,
-  solvedCount,
+  termCount,
   description,
   guesses,
   targetConfidence,
@@ -189,8 +189,8 @@ export function GameScreen({
         </div>
         <div className="flex items-center gap-6">
           <div className="flex flex-col items-end">
-            <span className="text-xs uppercase tracking-widest text-ink/50">Solved</span>
-            <span className="font-mono text-3xl font-bold tabular-nums">{solvedCount}</span>
+            <span className="text-xs uppercase tracking-widest text-ink/50">Terms</span>
+            <span className="font-mono text-3xl font-bold tabular-nums">{termCount}</span>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs uppercase tracking-widest text-ink/50">Score</span>

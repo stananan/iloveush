@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { UnitFilter } from './UnitFilter';
+import { LeaderboardModal } from './LeaderboardModal';
 import type { AIStatus } from '@/lib/useAI';
 
 type Props = {
@@ -42,6 +43,7 @@ export function StartScreen({
   roundsPlayed,
 }: Props) {
   const [howToOpen, setHowToOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const ready = aiStatus.phase === 'ready';
   const hasUnits = selectedUnits.length > 0;
 
@@ -77,15 +79,25 @@ export function StartScreen({
             {roundsPlayed === 1 ? '' : 's'}
           </div>
         )}
-        <button
-          onClick={() => setHowToOpen(true)}
-          className="text-sm text-ink/50 underline underline-offset-4 hover:text-ink"
-        >
-          How to Play
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setHowToOpen(true)}
+            className="text-sm text-ink/50 underline underline-offset-4 hover:text-ink"
+          >
+            How to Play
+          </button>
+          <button
+            onClick={() => setLeaderboardOpen(true)}
+            className="text-sm text-ink/50 underline underline-offset-4 hover:text-ink"
+          >
+            Leaderboard
+          </button>
+        </div>
       </div>
 
       <p className="text-center text-xs text-ink/30">Created by Stanley Ho</p>
+
+      {leaderboardOpen && <LeaderboardModal onClose={() => setLeaderboardOpen(false)} />}
 
       {howToOpen && (
         <div
