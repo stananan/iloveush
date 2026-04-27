@@ -22,7 +22,7 @@ export function UnitFilter({ selected, onChange }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm uppercase tracking-wide text-ink/60">Units</span>
+        <span className="text-sm tracking-wide text-ink/60">UNITS (Must select all in order to submit to the leaderboard)</span>
         <div className="flex gap-3">
           <button
             className="text-xs text-accent hover:underline disabled:opacity-40 disabled:no-underline"

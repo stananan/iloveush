@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { UnitFilter } from "./UnitFilter";
 import { LeaderboardModal } from "./LeaderboardModal";
+import { TermsModal } from "./TermsModal";
 import type { AIStatus } from "@/lib/useAI";
 
 type Props = {
@@ -44,6 +45,8 @@ export function StartScreen({
 }: Props) {
   const [howToOpen, setHowToOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const ready = aiStatus.phase === "ready";
   const hasUnits = selectedUnits.length > 0;
 
@@ -95,6 +98,18 @@ export function StartScreen({
           >
             Leaderboard
           </button>
+          <button
+            onClick={() => setTermsOpen(true)}
+            className="text-sm text-ink/50 underline underline-offset-4 hover:text-ink"
+          >
+            Terms
+          </button>
+          <button
+            onClick={() => setHowItWorksOpen(true)}
+            className="text-sm text-ink/50 underline underline-offset-4 hover:text-ink"
+          >
+            How It Works
+          </button>
         </div>
       </div>
 
@@ -102,6 +117,57 @@ export function StartScreen({
 
       {leaderboardOpen && (
         <LeaderboardModal onClose={() => setLeaderboardOpen(false)} />
+      )}
+
+      {termsOpen && (
+        <TermsModal onClose={() => setTermsOpen(false)} />
+      )}
+
+      {howItWorksOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
+          onClick={() => setHowItWorksOpen(false)}
+        >
+          <div
+            className="max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-serif text-2xl font-bold">How It Works</h3>
+            <div className="mt-4 space-y-3 text-sm text-ink/80">
+              <p>
+                Every AP US History term in the game has been converted into a
+                <strong> vector embedding</strong> — a list of ~384 numbers that
+                captures its meaning — using a small AI model called{" "}
+                <strong>BGE-small</strong> (~33 M parameters) that runs entirely
+                in your browser via WebAssembly.
+              </p>
+              <p>
+                As you type your description, the model embeds your words in the
+                same vector space. It then computes{" "}
+                <strong>cosine similarity</strong> between your description and
+                every term in the selected units, ranking them by how close the
+                meaning is.
+              </p>
+              <p>
+                The top 3 closest terms are shown as the AI&apos;s guesses. If
+                your term is a match, you score a point. No server is
+                involved — all inference happens locally, so your descriptions
+                stay private and the game works offline.
+              </p>
+              <p>
+                To improve accuracy, each term&apos;s embedding also folds in
+                its aliases, keywords, topic, and a short factual description,
+                giving the model more signal to match paraphrased clues.
+              </p>
+            </div>
+            <button
+              onClick={() => setHowItWorksOpen(false)}
+              className="mt-5 rounded-full border border-ink/20 px-5 py-2 text-sm hover:bg-ink/5"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       {howToOpen && (
@@ -115,11 +181,11 @@ export function StartScreen({
           >
             <h3 className="font-serif text-2xl font-bold">How to Play</h3>
             <ul className="mt-4 space-y-2 text-ink/80 text-sm list-disc list-inside">
-              <li>You have 2 minutes to describe your term.</li>
-              <li>Don&apos;t say the term itself (or an obvious shorthand).</li>
-              <li>The AI reads what you type and guesses in real time.</li>
-              <li>If its top guess matches your term, you score a point.</li>
-              <li>Say the term and you get a rule violation (0 points).</li>
+              <li>You have 2 minutes to type a description of your term.</li>
+              <li>You can not type your term or a short-hand form of it (rule violation).</li>
+              <li>The AI audience will try to guess your term based on the real definition.</li>
+              <li>If it matches one of the AI's top 3 gueses, you score a point.</li>
+              <li>You can skip a term by pressing tab.</li>
             </ul>
             <button
               onClick={() => setHowToOpen(false)}
