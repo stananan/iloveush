@@ -178,7 +178,7 @@ export function GameScreen({
   }, []);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-8 px-6 pt-32 pb-16">
+    <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-8 px-6 pt-20 pb-12">
       {/* term title — full width, centered, animates on term change */}
       <div
         key={term.id}

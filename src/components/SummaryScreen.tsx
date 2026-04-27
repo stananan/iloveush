@@ -70,7 +70,7 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center gap-8 px-6 pt-32 pb-16">
+    <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center gap-8 px-6 pt-20 pb-12">
       <h1 className="font-serif text-6xl md:text-7xl font-bold text-center tracking-tight">Game Summary</h1>
 
       <div className="w-full flex flex-col gap-3">
