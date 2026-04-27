@@ -104,9 +104,16 @@ function reducer(state: GameState, action: Action): GameState {
 
     case 'endSession': {
       if (state.phase !== 'playing') return state;
+      const lastResult: RoundResult = {
+        term: state.term,
+        outcome: 'skip',
+        description: state.description,
+        finalGuesses: state.guesses,
+        scoreDelta: 0,
+      };
       return {
         phase: 'summary',
-        history: state.history,
+        history: [...state.history, lastResult],
         score: state.score,
         selectedUnits: state.selectedUnits,
         durationSeconds: Math.min(180, Math.floor((Date.now() - state.startedAt) / 1000)),

@@ -34,7 +34,7 @@ export function ruleCheckDetail(description: string, term: Term): string | null 
 
   for (const tt of termTokens) {
     for (const dt of descTokens) {
-      if (tt === dt) return dt;
+      if (tt === dt && tt.length >= 2) return dt;
       const [shorter, longer] = tt.length <= dt.length ? [tt, dt] : [dt, tt];
       if (shorter.length >= 4 && longer.includes(shorter)) return dt;
     }
