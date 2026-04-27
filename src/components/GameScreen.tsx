@@ -181,84 +181,98 @@ export function GameScreen({
   }, []);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-6 py-8">
-      {/* top bar */}
-      <div className="flex items-center justify-between gap-4 border-b border-ink/10 pb-4">
-        <div className="flex-1">
-          <TermDisplay term={term} />
+    <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-8 px-6 pt-32 pb-16">
+      {/* term title — full width, centered, animates on term change */}
+      <div
+        key={term.id}
+        className="w-full border-b border-ink/10 pb-6"
+        style={{ animation: 'termIn 0.35s ease both' }}
+      >
+        <TermDisplay term={term} />
+      </div>
+
+      {/* stats row — centered */}
+      <div className="flex items-center justify-center gap-12">
+        <div className="flex flex-col items-center">
+          <span className="text-sm uppercase tracking-widest text-ink/50">Terms</span>
+          <span
+            key={termCount}
+            className="font-mono text-3xl font-bold tabular-nums"
+            style={{ animation: 'statPop 0.3s ease both' }}
+          >
+            {termCount}
+          </span>
         </div>
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end">
-            <span className="text-xs uppercase tracking-widest text-ink/50">Terms</span>
-            <span className="font-mono text-3xl font-bold tabular-nums">{termCount}</span>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-xs uppercase tracking-widest text-ink/50">Score</span>
-            <span className="font-mono text-3xl font-bold tabular-nums">{displayScore}</span>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-xs uppercase tracking-widest text-ink/50">Violations</span>
-            <span
-              className={`font-mono text-3xl font-bold tabular-nums ${
-                violationCount > 0 ? 'text-accent' : ''
-              }`}
-            >
-              {violationCount}
-            </span>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-xs uppercase tracking-widest text-ink/50">Time</span>
-            <Timer secondsLeft={secondsLeft} />
-          </div>
-          <button
-            onClick={handleSkip}
-            disabled={winPending}
-            className="rounded-full border border-ink/20 px-4 py-2 text-sm hover:bg-ink/5 disabled:opacity-50"
+        <div className="flex flex-col items-center">
+          <span className="text-sm uppercase tracking-widest text-ink/50">Score</span>
+          <span className="font-mono text-3xl font-bold tabular-nums">{displayScore}</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="text-sm uppercase tracking-widest text-ink/50">Violations</span>
+          <span
+            key={`v-${violationCount}`}
+            className={`font-mono text-3xl font-bold tabular-nums ${violationCount > 0 ? 'text-accent' : ''}`}
+            style={{ animation: violationCount > 0 ? 'statPop 0.3s ease both' : undefined }}
           >
-            Skip <span className="text-ink/30 text-xs">Tab</span>
-          </button>
-          <button
-            onClick={() => {
-              if (sessionEndedRef.current) return;
-              sessionEndedRef.current = true;
-              onEndSession();
-            }}
-            disabled={winPending}
-            className="rounded-full border border-ink/20 px-4 py-2 text-sm hover:bg-ink/5 disabled:opacity-50"
-          >
-            Finish
-          </button>
-          <button
-            onClick={() => {
-              if (sessionEndedRef.current) return;
-              setShowHomeConfirm(true);
-            }}
-            className="rounded-full border border-ink/20 px-4 py-2 text-sm hover:bg-ink/5"
-          >
-            Home <span className="text-ink/30 text-xs">Esc</span>
-          </button>
+            {violationCount}
+          </span>
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="text-sm uppercase tracking-widest text-ink/50">Time</span>
+          <Timer secondsLeft={secondsLeft} />
         </div>
       </div>
 
-      {/* main grid */}
-      <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-5">
-        <div className="md:col-span-3">
+      {/* textarea + guesses side by side, matched height */}
+      <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-5" style={{ alignItems: 'stretch' }}>
+        <div className="flex md:col-span-3">
           <textarea
             ref={textareaRef}
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
             placeholder="Start describing…"
             disabled={winPending || violation !== null}
-            className="h-full min-h-[320px] w-full resize-none rounded-2xl border border-ink/10 bg-white p-5 text-lg leading-relaxed shadow-sm outline-none focus:border-accent/60 disabled:opacity-70"
+            className="w-full flex-1 resize-none rounded-2xl border border-ink/10 bg-white p-5 text-xl leading-relaxed shadow-sm outline-none focus:border-accent/60 disabled:opacity-70"
           />
         </div>
-        <div className="md:col-span-2">
+        <div className="flex md:col-span-2">
           <GuessesPanel
             guesses={guesses}
             winTermId={winPending ? term.id : undefined}
             targetConfidence={targetConfidence}
           />
         </div>
+      </div>
+
+      {/* action buttons — centered, no grey border */}
+      <div className="flex gap-3">
+        <button
+          onClick={handleSkip}
+          disabled={winPending}
+          className="rounded-full bg-white px-6 py-3 text-base font-medium text-ink/70 shadow-sm transition hover:text-ink hover:shadow disabled:opacity-50"
+        >
+          Skip <span className="text-ink/30 text-sm">Tab</span>
+        </button>
+        <button
+          onClick={() => {
+            if (sessionEndedRef.current) return;
+            sessionEndedRef.current = true;
+            onEndSession();
+          }}
+          disabled={winPending}
+          className="rounded-full bg-ink px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:brightness-110 disabled:opacity-50"
+        >
+          Finish
+        </button>
+        <button
+          onClick={() => {
+            if (sessionEndedRef.current) return;
+            setShowHomeConfirm(true);
+          }}
+          className="rounded-full bg-white px-6 py-3 text-base font-medium text-ink/70 shadow-sm transition hover:text-ink hover:shadow"
+        >
+          Home <span className="text-ink/30 text-sm">Esc</span>
+        </button>
       </div>
 
       {violation && (

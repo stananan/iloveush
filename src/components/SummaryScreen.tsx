@@ -70,10 +70,10 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-16">
-      <h1 className="font-serif text-5xl font-bold text-center">Game Summary</h1>
+    <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center gap-8 px-6 pt-32 pb-16">
+      <h1 className="font-serif text-6xl md:text-7xl font-bold text-center tracking-tight">Game Summary</h1>
 
-      <div className="flex flex-col gap-3">
+      <div className="w-full flex flex-col gap-3">
         <div className="grid grid-cols-3 gap-3">
           <Stat label="Score" value={score} />
           <Stat label="Terms" value={history.length} />
@@ -86,14 +86,14 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
       </div>
 
       {/* leaderboard submission */}
-      <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
-        <div className="text-xs uppercase tracking-widest text-ink/50 mb-3">Submit to Leaderboard</div>
+      <div className="w-full rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
+        <div className="text-sm uppercase tracking-widest text-ink/50 mb-3">Submit to Leaderboard</div>
         {!allUnits ? (
-          <p className="text-sm text-ink/50 italic">
+          <p className="text-base text-ink/50 italic">
             Leaderboard submissions require all 8 units to be selected.
           </p>
         ) : submitState === 'submitted' ? (
-          <div className="text-green-700 font-semibold text-sm">
+          <div className="text-green-700 font-semibold text-base">
             Score submitted! Time: {formatDuration(durationSeconds)}
           </div>
         ) : (
@@ -105,36 +105,36 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
               onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
               placeholder="Your username (max 20 chars)"
               disabled={submitState === 'submitting'}
-              className="flex-1 rounded-full border border-ink/20 px-4 py-2 text-sm outline-none focus:border-accent/60 disabled:opacity-60"
+              className="flex-1 rounded-full border border-ink/10 bg-ink/[0.03] px-5 py-3 text-base outline-none focus:border-accent/60 disabled:opacity-60"
             />
             <button
               onClick={handleSubmit}
               disabled={submitState === 'submitting' || !username.trim()}
-              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
+              className="rounded-full bg-accent px-6 py-3 text-base font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50"
             >
               {submitState === 'submitting' ? 'Submitting…' : 'Submit'}
             </button>
           </div>
         )}
         {submitState === 'error' && (
-          <p className="mt-2 text-xs text-accent">{errorMsg}</p>
+          <p className="mt-2 text-sm text-accent">{errorMsg}</p>
         )}
       </div>
 
-      <div className="rounded-2xl border border-ink/10 bg-white p-6 shadow-sm">
-        <div className="text-xs uppercase tracking-widest text-ink/50 mb-3">Terms</div>
+      <div className="w-full rounded-2xl border border-ink/10 bg-white p-6 shadow-sm">
+        <div className="text-sm uppercase tracking-widest text-ink/50 mb-4">Terms</div>
         {history.length === 0 ? (
-          <div className="text-sm italic text-ink/40">No rounds played.</div>
+          <div className="text-base italic text-ink/40">No rounds played.</div>
         ) : (
           <ol className="divide-y divide-ink/5">
             {history.map((r, i) => (
-              <li key={i} className="py-3 text-sm">
+              <li key={i} className="py-4">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="font-serif font-semibold">
+                  <span className="font-serif text-lg font-semibold">
                     {i + 1}. {r.term.term}
                   </span>
                   <span
-                    className={`flex items-center gap-1 font-medium ${
+                    className={`flex items-center gap-1 text-base font-medium ${
                       r.outcome === 'win'
                         ? 'text-green-700'
                         : r.outcome === 'violation'
@@ -146,10 +146,10 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
                     {OUTCOME_LABEL[r.outcome]}
                   </span>
                 </div>
-                <p className="mt-1 text-ink/75">
+                <p className="mt-1 text-base text-ink/75">
                   {r.term.description ?? 'No description available for this term yet.'}
                 </p>
-                <p className="mt-1 text-xs text-ink/55">
+                <p className="mt-1 text-sm text-ink/50">
                   Your clue: {r.description.trim() ? r.description : 'No clue entered.'}
                 </p>
               </li>
@@ -158,16 +158,16 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
         )}
       </div>
 
-      <div className="flex justify-center gap-4">
+      <div className="flex gap-4">
         <button
           onClick={onGoHome}
-          className="rounded-full border border-ink/20 px-8 py-3 font-semibold hover:bg-ink/5"
+          className="rounded-full bg-white px-8 py-3 text-base font-semibold text-ink/70 shadow-sm transition hover:text-ink hover:shadow"
         >
           Home
         </button>
         <button
           onClick={onPlayAgain}
-          className="rounded-full bg-accent px-10 py-3 font-semibold text-white shadow hover:brightness-110"
+          className="rounded-full bg-accent px-10 py-3 text-base font-semibold text-white shadow-sm hover:brightness-110"
         >
           Play Again
         </button>
@@ -178,9 +178,9 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-ink/10 bg-white p-4 text-center shadow-sm">
-      <div className="text-xs uppercase tracking-widest text-ink/50">{label}</div>
-      <div className="mt-1 font-serif text-3xl font-bold tabular-nums">{value}</div>
+    <div className="rounded-2xl border border-ink/10 bg-white p-5 text-center shadow-sm">
+      <div className="text-sm uppercase tracking-widest text-ink/50">{label}</div>
+      <div className="mt-1 font-mono text-3xl font-bold tabular-nums">{value}</div>
     </div>
   );
 }

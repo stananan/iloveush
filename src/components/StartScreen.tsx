@@ -138,21 +138,31 @@ export function StartScreen({
                 Every AP US History term in the game has been converted into a
                 <strong> vector embedding</strong> — a list of ~384 numbers that
                 captures its meaning — using a small AI model called{" "}
-                <strong>BGE-small</strong> (~33 M parameters) that runs entirely
-                in your browser via WebAssembly.
+                <strong>BGE-small</strong> (~33 M parameters). It runs entirely
+                in your browser via{" "}
+                <strong>Transformers.js</strong> and WebAssembly — no server
+                involved.
               </p>
               <p>
                 As you type your description, the model embeds your words in the
                 same vector space. It then computes{" "}
                 <strong>cosine similarity</strong> between your description and
                 every term in the selected units, ranking them by how close the
-                meaning is.
+                meaning is.{" "}
+                <a
+                  href="https://stananan.github.io/cos-visualizer/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-accent underline underline-offset-2 hover:brightness-110"
+                >
+                  See a cool visualizer here →
+                </a>
               </p>
               <p>
                 The top 3 closest terms are shown as the AI&apos;s guesses. If
-                your term is a match, you score a point. No server is
-                involved — all inference happens locally, so your descriptions
-                stay private and the game works offline.
+                your term is a match, you score a point. Since everything runs
+                locally, your descriptions stay private and the game works
+                offline.
               </p>
               <p>
                 To improve accuracy, each term&apos;s embedding also folds in

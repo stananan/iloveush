@@ -34,12 +34,12 @@ export function GuessesPanel({
     : 'bg-accent';
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex w-full flex-col gap-3">
       {/* confidence bar */}
       <div className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs uppercase tracking-widest text-ink/50">AI Confidence</span>
-          <span className="text-xs font-mono tabular-nums text-ink/50">
+          <span className="text-sm uppercase tracking-widest text-ink/50">AI Confidence</span>
+          <span className="text-sm font-mono tabular-nums text-ink/50">
             {confPct !== null ? `${confPct}%` : '—'}
           </span>
         </div>
@@ -52,16 +52,16 @@ export function GuessesPanel({
       </div>
 
       {/* guesses list */}
-      <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
-        <div className="text-xs uppercase tracking-widest text-ink/50 mb-3">
+      <div className="flex-1 rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
+        <div className="text-sm uppercase tracking-widest text-ink/50 mb-3">
           The class is guessing…
         </div>
         {rows.length === 0 ? (
-          <div className="text-ink/40 italic text-sm">
+          <div className="text-ink/40 italic text-base">
             Start typing to see guesses.
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-4">
             {rows.map((g, i) => {
               const term = termMap.get(g.id);
               const name = term?.term ?? g.id;
@@ -74,13 +74,13 @@ export function GuessesPanel({
                     <span
                       className={clsx(
                         'truncate transition-colors',
-                        isTop ? 'text-xl font-bold font-serif' : 'text-sm text-ink/70',
+                        isTop ? 'text-2xl font-bold font-serif' : 'text-base text-ink/70',
                         hot && 'text-green-700'
                       )}
                     >
                       {i + 1}. {name}
                     </span>
-                    <span className="text-xs font-mono tabular-nums text-ink/50">
+                    <span className="text-sm font-mono tabular-nums text-ink/50">
                       {(g.score * 100).toFixed(0)}%
                     </span>
                   </div>
