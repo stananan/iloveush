@@ -13,6 +13,7 @@ type Props = {
   aiStatus: AIStatus;
   score: number;
   roundsPlayed: number;
+  onClearCache: () => void;
 };
 
 function StatusLine({ status }: { status: AIStatus }) {
@@ -42,6 +43,7 @@ export function StartScreen({
   aiStatus,
   score,
   roundsPlayed,
+  onClearCache,
 }: Props) {
   const [howToOpen, setHowToOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
@@ -109,6 +111,12 @@ export function StartScreen({
             className="text-sm text-ink/50 underline underline-offset-4 hover:text-ink"
           >
             How It Works
+          </button>
+          <button
+            onClick={onClearCache}
+            className="text-sm text-ink/50 underline underline-offset-4 hover:text-ink"
+          >
+            Refresh Cache
           </button>
         </div>
       </div>

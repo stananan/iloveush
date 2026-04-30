@@ -2,7 +2,7 @@ import { get, set, del } from 'idb-keyval';
 
 // Bump when the model or the term embedding text format changes, so clients
 // re-embed instead of loading stale vectors from IndexedDB.
-const CACHE_KEY = 'term-embeddings-v5-bge-small';
+const CACHE_KEY = 'term-embeddings-v8-bge-small';
 
 export type CachedEmbeddings = {
   ids: string[];

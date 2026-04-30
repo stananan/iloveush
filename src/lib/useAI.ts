@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TERMS } from '@/data/terms';
-import { loadEmbeddings, saveEmbeddings } from './embeddingCache';
+import { loadEmbeddings, saveEmbeddings, clearEmbeddings } from './embeddingCache';
 
 export type Guess = { id: string; score: number };
 
@@ -31,7 +31,6 @@ export function useAI() {
       if (msg.type === 'modelProgress') {
         setStatus({ phase: 'loading-model', progress: msg.progress });
       } else if (msg.type === 'ready') {
-        // model loaded; decide whether to hydrate from cache or embed terms
         const cached = await loadEmbeddings();
         if (cached && cached.ids.length === TERMS.length) {
           worker.postMessage({
@@ -46,9 +45,6 @@ export function useAI() {
           worker.postMessage({
             type: 'embedTerms',
             terms: TERMS.map((t) => {
-              // Rich embedding text: term + aliases + topic + factual description.
-              // The description carries the key facts a student would mention
-              // (people, places, dates, causes) so a paraphrased clue can match.
               const parts = [t.term];
               if (t.aliases && t.aliases.length) parts.push(t.aliases.join(', '));
               if (t.keywords && t.keywords.length) parts.push(t.keywords.join(', '));
@@ -95,5 +91,10 @@ export function useAI() {
     worker.postMessage({ type: 'setAllowedIds', ids });
   }, []);
 
-  return { status, latestGuesses, requestGuesses, setLatestGuesses, setAllowedIds };
+  const clearCache = useCallback(async () => {
+    await clearEmbeddings();
+    window.location.reload();
+  }, []);
+
+  return { status, latestGuesses, requestGuesses, setLatestGuesses, setAllowedIds, clearCache };
 }

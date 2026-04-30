@@ -147,7 +147,7 @@ export function SummaryScreen({ history, score, durationSeconds, selectedUnits, 
                   </span>
                 </div>
                 <p className="mt-1 text-base text-ink/75">
-                  {r.term.description ?? 'No description available for this term yet.'}
+                  {r.term.description ?? 'No description available.'}
                 </p>
                 <p className="mt-1 text-sm text-ink/50">
                   Your clue: {r.description.trim() ? r.description : 'No clue entered.'}

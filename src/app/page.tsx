@@ -13,7 +13,7 @@ import { SummaryScreen } from '@/components/SummaryScreen';
 
 export default function Home() {
   const [state, dispatch] = useGameState();
-  const { status, latestGuesses, requestGuesses, setLatestGuesses, setAllowedIds } = useAI();
+  const { status, latestGuesses, requestGuesses, setLatestGuesses, setAllowedIds, clearCache } = useAI();
 
   const termById = useMemo(() => new Map(TERMS.map((t) => [t.id, t])), []);
 
@@ -126,6 +126,7 @@ export default function Home() {
       aiStatus={status}
       score={0}
       roundsPlayed={0}
+      onClearCache={clearCache}
     />
   );
 }
