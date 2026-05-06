@@ -7,10 +7,6 @@ import { useMemo } from 'react';
 
 const termMap = new Map(TERMS.map((t) => [t.id, t]));
 
-// Cosine score range for the confidence bar: 0.35 → 0%, 0.80 → 100%
-const CONF_MIN = 0.35;
-const CONF_MAX = 0.80;
-
 export function GuessesPanel({
   guesses,
   winTermId,
@@ -24,7 +20,7 @@ export function GuessesPanel({
 
   const confPct =
     targetConfidence !== null
-      ? Math.round(Math.min(1, Math.max(0, (targetConfidence - CONF_MIN) / (CONF_MAX - CONF_MIN))) * 100)
+      ? Math.round(Math.min(1, Math.max(0, targetConfidence)) * 100)
       : null;
 
   const confColor =
